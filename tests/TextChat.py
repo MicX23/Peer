@@ -1,6 +1,8 @@
 class TextChat:
     messages = []
-    last_id = -1
+    users = []
+    Server = None
+    MyUser = None
 
     def add_mesage(self, username, text):
         self.messages.append({

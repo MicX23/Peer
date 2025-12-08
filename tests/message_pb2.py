@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\x12\x08Messager\"9\n\x04Test\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x12\n\nmessage_id\x18\x02 \x01(\x03\x12\x0c\n\x04text\x18\x03 \x01(\tb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\x12\x08Messager\"9\n\x04Test\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x12\n\nmessage_id\x18\x02 \x01(\x03\x12\x0c\n\x04text\x18\x03 \x01(\t\"A\n\x0c\x46irstMassage\x12\x0c\n\x04tupe\x18\x01 \x01(\x05\x12\x11\n\tPublicKey\x18\x02 \x01(\t\x12\x10\n\x08UserName\x18\x03 \x01(\t\"<\n\x0b\x46irstAnswer\x12\x0c\n\x04tupe\x18\x01 \x01(\x05\x12\x11\n\tPublicKey\x18\x02 \x01(\t\x12\x0c\n\x04Text\x18\x03 \x01(\t\"\'\n\x07Profile\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0e\n\x06\x61vatar\x18\x02 \x01(\x0c\"`\n\x0b\x45ssenceInfo\x12\x12\n\nverify_key\x18\x01 \x01(\x0c\x12\"\n\x07profile\x18\x02 \x01(\x0b\x32\x11.Messager.Profile\x12\x19\n\x11profile_signature\x18\x03 \x01(\x0c\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,4 +33,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_TEST']._serialized_start=27
   _globals['_TEST']._serialized_end=84
+  _globals['_FIRSTMASSAGE']._serialized_start=86
+  _globals['_FIRSTMASSAGE']._serialized_end=151
+  _globals['_FIRSTANSWER']._serialized_start=153
+  _globals['_FIRSTANSWER']._serialized_end=213
+  _globals['_PROFILE']._serialized_start=215
+  _globals['_PROFILE']._serialized_end=254
+  _globals['_ESSENCEINFO']._serialized_start=256
+  _globals['_ESSENCEINFO']._serialized_end=352
 # @@protoc_insertion_point(module_scope)

@@ -7,3 +7,26 @@ message Test {
     int64 message_id = 2;
     string text = 3;
 }
+
+message FirstMassage{
+    int32 tupe = 1;
+    string PublicKey = 2;
+    string UserName = 3;
+}
+
+message FirstAnswer{
+    int32 tupe = 1;
+    string PublicKey = 2;
+    string Text = 3;
+}
+
+message Profile {
+    string name = 1;
+    bytes avatar = 2;
+}
+
+message EssenceInfo {
+    bytes verify_key = 1;
+    Profile profile = 2;
+    bytes profile_signature = 3;
+}
