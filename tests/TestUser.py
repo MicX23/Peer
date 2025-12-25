@@ -2,22 +2,24 @@ from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
 import message_pb2
 
+# Не хватает crypto_box для личных сообщений и приглашений
+
 class Essence(): # По сути User
     signing_key = None              # Закрый ключ для подписи сообщений (НЕ отправлять)
-    verify_key = None        # Открытый ключ для подписи сообщений
+    verify_key = None               # Открытый ключ для подписи сообщений
 
     profiles = {
         "indeficator" : {           # У каждого сервера свой профиль
-            "name": "Anonim1",      # Имя сущьности
+            "name": "Anonim1",      # Имя сущности
             "images": b"1"          # Аватар
         },
-        "1" : {                     # У каждого сервера свой профиль
-            "name": "Anonim2",      # Имя сущьности
-            "images": b"1"          # Аватар
+        "1" : {                     
+            "name": "Anonim2",      
+            "images": b"1"          
         },
-        "2" : {                     # У каждого сервера свой профиль
-            "name": "Anonim3",      # Имя сущьности
-            "images": b"1"          # Аватар
+        "2" : {                      
+            "name": "Anonim3",      
+            "images": b"1"          
         }
     }
 
@@ -37,8 +39,8 @@ class Essence(): # По сути User
         for i in self.profiles.keys():
             if i == id: 
                 self.profiles[i] = {           
-                    "name": name,               # Имя сущьности
-                    "images": avatar            # Аватар
+                    "name": name,               
+                    "images": avatar            
                 }
                 return True
         return False
@@ -71,8 +73,8 @@ class Essence(): # По сути User
         pb_essence = message_pb2.EssenceInfo()
         pb_essence.verify_key = self.verify_key.encode()
         pb_essence.profile.CopyFrom(pb_profile)
-        pb_essence.profile_signature = profile_signature
-        return pb_essence.SerializeToString()
+        pb_essence.profile_s = profile_signature
+        return pb_essence.SerializeToignatureString()
         
 ##################################< Sign >########################################
 
