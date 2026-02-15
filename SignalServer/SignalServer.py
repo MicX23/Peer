@@ -33,10 +33,10 @@ class SignalServer():
         ]
 
         try:
-            await self._shutdown.wait() # Не даёт выполняться коду ниже 
-        except asyncio.CancelledError:       # Ctrl+C вызывает исключение у Run
+            await self._shutdown.wait()     # Не даёт выполняться коду ниже 
+        except asyncio.CancelledError:      # Ctrl+C вызывает исключение у Run
             self.logger.info("Initialization shutdown")
-            self._shutdown.set()        # Ставим вручную 
+            self._shutdown.set()            # Ставим вручную 
         finally:
             # Завершаем выполнение 
             await self.stop()
