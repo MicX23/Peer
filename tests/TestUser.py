@@ -6,7 +6,7 @@ import message_pb2
 
 class Essence(): # По сути User
     signing_key = None              # Закрый ключ для подписи сообщений (НЕ отправлять)
-    verify_key = None               # Открытый ключ для подписи сообщений
+    verify_key = None               # Открытый ключ для подписи сообщений используется как id
 
     profiles = {
         "indeficator" : {           # У каждого сервера свой профиль
