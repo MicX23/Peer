@@ -1,0 +1,130 @@
+.space-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.space-modal {
+  background-color: var(--discord-bg);
+  width: 400px;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  border: 1px solid var(--discord-border);
+}
+
+.space-modal-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--discord-border);
+  text-align: center;
+}
+
+.space-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--discord-text);
+  margin: 0;
+}
+
+.space-modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--discord-border);
+}
+
+.space-tab {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: var(--discord-muted);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.space-tab:hover {
+  background-color: var(--discord-hover);
+  color: var(--discord-text);
+}
+
+.space-tab.active {
+  color: var(--discord-text);
+  border-bottom-color: var(--discord-accent);
+  background-color: var(--discord-channel);
+}
+
+.space-modal-body {
+  padding: 20px;
+}
+
+.space-input-group {
+  margin-bottom: 16px;
+}
+
+.space-label {
+  display: block;
+  color: var(--discord-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.space-input {
+  width: 100%;
+  background-color: var(--discord-channel);
+  border: 1px solid transparent;
+  padding: 10px;
+  border-radius: 4px;
+  color: var(--discord-text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.space-input:focus {
+  border-color: var(--discord-accent);
+}
+
+.space-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: var(--discord-text);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  text-decoration: underline;
+}
+
+.btn-primary {
+  background-color: var(--discord-accent);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #4752c4;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,41 @@
+:root {
+  /* Discord colors - Dark theme */
+  --discord-bg: #36393f;
+  --discord-sidebar: #2f3136;
+  --discord-channel: #40444b;
+  --discord-text: #dcddde;
+  --discord-muted: #72767d;
+  --discord-accent: #5865f2;
+  --discord-hover: #32353b;
+  --discord-border: #202225;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--discord-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--discord-hover);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--discord-muted);
+}

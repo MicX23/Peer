@@ -1,0 +1,268 @@
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--discord-bg);
+  min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.chat-header {
+  height: 48px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--discord-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  color: var(--discord-text);
+  font-size: 16px;
+}
+
+.chat-header-hash {
+  color: var(--discord-muted);
+  margin-right: 8px;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ... существующие стили ... */
+
+.message-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+/* Стили для моих сообщений (справа) */
+.message-group-me {
+  align-items: flex-end;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.bubble-them {
+  background-color: var(--discord-channel);
+  align-self: flex-start;
+  border-top-left-radius: 2px;
+}
+
+.bubble-me {
+  background-color: var(--discord-accent);
+  color: white;
+  align-self: flex-end;
+  border-top-right-radius: 2px;
+}
+
+.message-content {
+  font-size: 15px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Для своих сообщений текст белый */
+.bubble-me .message-content {
+  color: white;
+}
+
+/* ------------------------------------------ */
+
+.message-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.message-author {
+  font-weight: 500;
+  color: var(--discord-text);
+  cursor: pointer;
+}
+
+.message-author:hover {
+  text-decoration: underline;
+}
+
+.message-timestamp {
+  font-size: 12px;
+  color: var(--discord-muted);
+}
+
+
+.chat-input-container {
+  padding: 0 16px 24px 16px;
+  background-color: var(--discord-bg);
+}
+
+.chat-input-wrapper {
+  background-color: var(--discord-channel);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--discord-text);
+  font-size: 15px;
+  outline: none;
+}
+
+.chat-input::placeholder {
+  color: var(--discord-muted);
+}
+
+.chat-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--discord-muted);
+  text-align: center;
+  padding: 20px;
+}
+
+.chat-empty-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--discord-text);
+  margin-bottom: 8px;
+}
+
+/* ... существующие стили ... */
+
+.chat-header {
+  /* Обновляем flex, чтобы разнести элементы по краям */
+  justify-content: space-between; 
+}
+
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-header-actions {
+  position: relative;
+}
+
+.header-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--discord-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-menu-btn:hover {
+  background-color: var(--discord-hover);
+  color: var(--discord-text);
+}
+
+.header-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background-color: var(--discord-sidebar);
+  border: 1px solid var(--discord-border);
+  border-radius: 6px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  min-width: 160px;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--discord-text);
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.1s;
+}
+
+.dropdown-item:hover {
+  background-color: var(--discord-accent);
+  color: white;
+}
+
+.dropdown-item.danger {
+  color: #f87171;
+}
+
+.dropdown-item.danger:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* Стили для модалки информации о пространстве */
+.space-info-modal {
+  background-color: var(--discord-bg);
+  width: 400px;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  border: 1px solid var(--discord-border);
+}
+
+.space-info-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--discord-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.space-info-body {
+  padding: 20px;
+}
+
+.info-row {
+  margin-bottom: 16px;
+}
+
+.info-label {
+  color: var(--discord-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  color: var(--discord-text);
+  font-family: monospace;
+  background: var(--discord-channel);
+  padding: 8px;
+  border-radius: 4px;
+  word-break: break-all;
+  font-size: 13px;
+}

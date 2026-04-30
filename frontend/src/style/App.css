@@ -1,0 +1,23 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--discord-bg);
+  color: var(--discord-text);
+}
+
+.loading-screen {
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--discord-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--discord-muted);
+}
+
+.chat-area {
+  flex: 1;
+  background-color: var(--discord-bg);
+}
