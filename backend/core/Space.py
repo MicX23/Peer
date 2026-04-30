@@ -1,11 +1,4 @@
-import hashlib
-import json
-import nacl.signing
-import nacl.utils
-import asyncio
-import socket
-import nacl.secret
-import nacl.exceptions
+import hashlib, json, nacl.signing, nacl.utils, asyncio, socket, nacl.secret, nacl.exceptions, os, uuid, datetime 
 from core.get_me_logger import get_logger
 
 class Space:
@@ -30,6 +23,13 @@ class Space:
         self.NODE = node
         self.ADMIN = is_admin
         self._metadata = {"Name": name} 
+
+
+        self.download_dir = os.path.join("./downloads", self.name.replace(" ", "_"))
+        os.makedirs(self.download_dir, exist_ok=True)
+
+         # Словарь для сборки файлов: { file_id: { "chunks": {}, "total": N, "name": str } }
+        self._receiving_files = {} 
         
         # Создаем сокет
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -44,6 +44,7 @@ class Space:
         self._packages_sending = asyncio.Queue(maxsize=1000)
         self._packages_responses = asyncio.Queue(maxsize=1000)
         self.messages = asyncio.Queue(maxsize=1000)
+        self.events = asyncio.Queue(maxsize=1000)
         
         self._shutdown = asyncio.Event()
         self._connected_event = asyncio.Event() # Событие успешного подключения для клиента
@@ -284,6 +285,26 @@ class Space:
             except nacl.exceptions.CryptoError:
                     self.logger.info(f"Я не смог")
                     pass
+            
+    async def send_leave_signal(self):
+        """Отправляет уведомление всем участникам о выходе из чата."""
+        if not self.secret or not self.NODE.User:
+            return
+
+        data = {
+            "type": "leave",
+            "space_id": self.space_id,
+            "user": self.NODE.User.profile # Передаем свой профиль, чтобы другие знали, кто ушел
+        }
+        
+        try:
+            packed = await asyncio.to_thread(self.net_pack, data)
+            encrypted = self.encrypt_message(packed.encode())
+            # Рассылаем всем текущим пользователям
+            await self._packages_sending.put((encrypted, None)) 
+            self.logger.info("Сигнал leave отправлен участникам")
+        except Exception as e:
+            self.logger.error(f"Ошибка отправки сигнала leave: {e}") 
 
     async def __space_processor_deamon(self):
          self.logger.info("PROCESSOR DEMON STARTED") # <--- Проверка запуска
@@ -332,19 +353,40 @@ class Space:
                                 }
                                 self.logger.info(f"Клиент {metadata['name']} добавлен в список пользователей")
 
+                                await self.events.put({
+                                        "type": "user_connected",
+                                        "user_id": metadata['verify_key'],
+                                        "name": metadata['name'],
+                                        "addr": addr,
+                                        "timestamp": asyncio.get_event_loop().time()
+                                    })
+
                         case "good":
                             self.logger.debug(f"Получено подтверждение good от {addr}")
 
                         case "leave":
-                            sender_id = unpacked_data.get('sender_id') # Или verify_key из профиля
-                            # Лучше брать из профиля пользователя, если он передан
+                            self.logger.info("Получен сигнал отключения (leave)")
                             user_profile = unpacked_data.get('user')
+                            
                             if user_profile:
                                 vk = user_profile.get('verify_key')
+                                user_name = user_profile.get('name', 'Unknown')
+                                
                                 if vk and vk in self.users:
+                                    # Удаляем пользователя из списка
                                     del self.users[vk]
-                                    self.logger.info(f"Пользователь {user_profile.get('name')} покинул пространство.")
-                            break # Прерываем обработку этого пакета
+                                    self.logger.info(f"Пользователь {user_name} покинул пространство.")
+                                    
+                                    # Отправляем событие в UI
+                                    await self.events.put({
+                                        "type": "user_disconnected",
+                                        "user_id": vk,
+                                        "name": user_name,
+                                        "timestamp": asyncio.get_event_loop().time()
+                                    })
+                                else:
+                                    self.logger.debug(f"Пользователь {user_name} не найден в списке активных (уже отключился?)")
+                            continue
 
                         case "connect_true":
                             self.logger.info("!!! ПОЛУЧЕН CONNECT_TRUE ОТ АДМИНА !!!")
@@ -374,7 +416,7 @@ class Space:
                             # Проверка, что сообщение из нашего пространства
                             if unpacked_data.get('space_id') != self.space_id:
                                 self.logger.debug(f"Игнорирую сообщение из чужого пространства {unpacked_data.get('space_id')}")
-                                break 
+                                continue 
                             
                             message = unpacked_data.get('message')
                             sender_id = unpacked_data.get('sender_id')
@@ -389,6 +431,14 @@ class Space:
                                     'box_public_key': metadata['box_public_key'], 
                                     'addr': addr
                                 }
+
+                                await self.events.put({
+                                    "type": "user_joined",
+                                    "user_id": metadata['verify_key'],
+                                    "name": metadata['name'],
+                                    "addr": addr
+                                })
+
                                 resp = {
                                     "type": "good",
                                     "space_id": self.space_id,
@@ -397,6 +447,43 @@ class Space:
                                 packed_resp = await asyncio.to_thread(self.net_pack, resp)
                                 enc_resp = self.encrypt_message(packed_resp.encode())
                                 await self._packages_sending.put((enc_resp, addr))
+                        
+                        case "file_chunk":
+                            transfer_id = unpacked_data.get('transfer_id')
+                            chunk_index = unpacked_data.get('chunk_index')
+                            total_chunks = unpacked_data.get('total_chunks')
+                            file_name = unpacked_data.get('file_name')
+                            tag = unpacked_data.get('tag', 'default')
+                            data_hex = unpacked_data.get('data')
+                            sender_id = unpacked_data.get('sender_id')
+                            
+                            if transfer_id not in self._receiving_files:
+                                self._receiving_files[transfer_id] = {
+                                    "chunks": {},
+                                    "total": total_chunks,
+                                    "name": file_name,
+                                    "tag": tag,
+                                    "received_count": 0,
+                                    "sender_id": sender_id
+                                }
+                                # Можно вывести лог о начале приема, если нужно
+                                # self.logger.info(f"Прием файла: {file_name} (Tag: {tag})")
+
+                            file_info = self._receiving_files[transfer_id]
+                            
+                            try:
+                                chunk_bytes = bytes.fromhex(data_hex)
+                                # Проверка на дубликаты чанков
+                                if chunk_index not in file_info["chunks"]:
+                                    file_info["chunks"][chunk_index] = chunk_bytes
+                                    file_info["received_count"] += 1
+                                    
+                                    if file_info["received_count"] == file_info["total"]:
+                                        self._assemble_file(transfer_id, file_info)
+                                        
+                            except Exception as e:
+                                self.logger.error(f"Ошибка чанка: {e}")
+                            continue
 
                         case _:
                             self.logger.warning(f"Неизвестный тип сообщения: {msg_type}")
@@ -418,7 +505,73 @@ class Space:
             except Exception as e:
                 if not self._shutdown.is_set():
                     self.logger.error(f"Критическая ошибка в processor: {e}", exc_info=True)
+    
 
+    def _assemble_file(self, transfer_id: str, file_info: dict):
+        """Собирает файл и сохраняет по пути: Project_Root/downloads/DDMMYYYY/tag/filename"""
+        try:
+            # 1. Сортируем и собираем байты
+            sorted_chunks = sorted(file_info["chunks"].items(), key=lambda x: x[0])
+            file_content = b"".join([chunk for _, chunk in sorted_chunks])
+            
+            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+            if not os.path.exists(os.path.join(project_root, 'backend')) and not os.path.exists(os.path.join(project_root, 'electron')):
+                 pass 
+
+            # 3. Формируем дату (ДДММГГГГ)
+            now = datetime.datetime.now()
+            date_folder = now.strftime("%d%m%Y") 
+            
+            # 4. Получаем метку и имя файла
+            tag = file_info.get("tag", "untagged")
+            file_name = file_info["name"]
+            
+            # Очищаем метку от опасных символов
+            safe_tag = "".join(c for c in tag if c.isalnum() or c in "._- ")
+            safe_tag = safe_tag.strip()
+            if not safe_tag:
+                safe_tag = "untagged"
+
+            # 5. Формируем полный АБСОЛЮТНЫЙ путь
+            # Структура: Project_Root/downloads/DDMMYYYY/tag/filename
+            downloads_dir = os.path.join(project_root, "downloads")
+            final_path = os.path.join(downloads_dir, date_folder, safe_tag, file_name)
+            
+            # Создаем директорию рекурсивно
+            os.makedirs(os.path.dirname(final_path), exist_ok=True)
+            
+            # Если файл уже есть, добавляем индекс
+            if os.path.exists(final_path):
+                base, ext = os.path.splitext(final_path)
+                counter = 1
+                while os.path.exists(final_path):
+                    final_path = f"{base}_{counter}{ext}"
+                    counter += 1
+
+            # 6. Записываем файл
+            with open(final_path, 'wb') as f:
+                f.write(file_content)
+                
+            self.logger.info(f"Файл сохранен (ABSOLUTE): {final_path}")
+            
+            # Уведомляем UI
+            # ВАЖНО: Мы отправляем АБСОЛЮТНЫЙ путь
+            asyncio.create_task(self.events.put({
+                "type": "file_received",
+                "file_name": file_name,
+                "path": final_path, # <-- Абсолютный путь
+                "size": len(file_content),
+                "tag": safe_tag,
+                "sender_id": file_info.get("sender_id")
+            }))
+            
+            # Очищаем память
+            if transfer_id in self._receiving_files:
+                del self._receiving_files[transfer_id]
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка сохранения файла {transfer_id}: {e}", exc_info=True)
+            
     async def _notify_users(self, users: dict):
         """
         Отправляет уведомление in_new всем пользователям из списка.
@@ -463,6 +616,58 @@ class Space:
         except Exception as e:
             self.logger.error(f"Ошибка отправки сообщения: {e}")
             return False
+        
+    async def send_file(self, file_path: str, tag: str = "default"):
+        """
+        Разбивает файл на чанки и отправляет их.
+        :param file_path: Путь к файлу
+        :param tag: Метка для папки (например, 'work', 'memes')
+        """
+        if not os.path.exists(file_path):
+            self.logger.error(f"Файл не найден: {file_path}")
+            return False
+
+        file_name = os.path.basename(file_path)
+        file_size = os.path.getsize(file_path)
+        
+        # Генерируем уникальный ID передачи
+        transfer_id = str(uuid.uuid4())[:8]
+        
+        CHUNK_SIZE = 1000 
+        
+        self.logger.info(f"Начинаю отправку файла: {file_name} (Tag: {tag})")
+        
+        with open(file_path, 'rb') as f:
+            chunk_index = 0
+            total_chunks = (file_size // CHUNK_SIZE) + (1 if file_size % CHUNK_SIZE else 0)
+
+            while True:
+                data = f.read(CHUNK_SIZE)
+                if not data:
+                    break
+                
+                packet = {
+                    "type": "file_chunk",
+                    "transfer_id": transfer_id, # Уникальный ID этой сессии передачи
+                    "file_name": file_name,
+                    "tag": tag,                 # Метка для папки
+                    "chunk_index": chunk_index,
+                    "total_chunks": total_chunks,
+                    "data": data.hex(),
+                    "sender_id": self.NODE.User.verify_key.encode().hex()
+                }
+                
+                packed = await asyncio.to_thread(self.net_pack, packet)
+                encrypted = self.encrypt_message(packed.encode())
+                
+                await self._packages_sending.put((encrypted, None))
+                
+                chunk_index += 1
+                # Небольшая пауза, чтобы не перегружать UDP буфер
+                await asyncio.sleep(0.005) 
+                
+        self.logger.info(f"Отправка файла {file_name} завершена.")
+        return True
 
     def net_pack(self, data:dict) -> str:
         return json.dumps(data)

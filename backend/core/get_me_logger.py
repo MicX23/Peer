@@ -1,4 +1,4 @@
-import logging
+import logging, os
 
 #   Python 3.13.7
 #
@@ -25,10 +25,18 @@ def get_logger(name:str, console:bool = True, level:int = 1) -> logging.Logger:
         '%(asctime)s [%(name)s] %(levelname)s in %(filename)s:%(lineno)d: %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'  
     )
+    log_dir = "./logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+        
+    if logger.handlers:
+        logger.handlers.clear()
 
-    file_handler = logging.FileHandler(f"{name}.log", encoding='utf-8')
+    file_handler = logging.FileHandler(f"./{log_dir}/{name}.log", encoding='utf-8')
     file_handler.setFormatter(formartter)    
     logger.addHandler(file_handler )  
+
+
 
     if console:
         console_handler = logging.StreamHandler()

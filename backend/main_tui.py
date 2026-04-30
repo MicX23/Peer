@@ -22,7 +22,6 @@ async def input_loop(node: Node):
 
     active_space_id = None  # ID пространства, в котором мы сейчас "находимся"
     current_display_task = None # Задача вывода сообщений для активного пространства
-
     async def space_message_displayer(space_id: str):
         """
         Задача, которая читает сообщения из конкретного пространства и выводит их.
@@ -63,6 +62,50 @@ async def input_loop(node: Node):
         except Exception as e:
             print(f"\nОшибка в дисплее сообщений: {e}")
 
+    async def space_event_displayer(space_id: str):
+        """Выводит системные события (подключения/отключения)"""
+        try:
+            while not node._shutdown.is_set():
+                if space_id not in node.spaces:
+                    break
+                
+                space = node.spaces[space_id]
+                try:
+                    event = await asyncio.wait_for(space.events.get(), timeout=1.0)
+                    
+                    if active_space_id != space_id:
+                        continue 
+
+                    # Форматируем событие
+                    if event['type'] == 'user_connected' or event['type'] == 'user_joined':
+                        msg = f"Пользователь {event['name']} подключился"
+                    elif event['type'] == 'user_disconnected':
+                        msg = f"Пользователь {event['name']} отключился"
+                    elif event['type'] == 'file_received':
+                        size_kb = event['size'] / 1024
+                        # Относительный путь для красоты, если он начинается с ./
+                        display_path = event['path']
+                        if display_path.startswith('./'):
+                            display_path = display_path[2:]
+                            
+                        msg = f"Файл: {event['file_name']} ({size_kb:.1f} KB)"
+                        msg += f"\n    Папка: {display_path}"
+                    else:
+                        msg = f"Событие: {event['type']}"
+
+                    print(f"\r[{space.name}] SYSTEM: {msg}")
+                    
+                    # Возвращаем приглашение ввода
+                    prefix = f"{active_space_id[:8]}" if active_space_id else "NO SPACE"
+                    print(f"[{prefix}]> ", end='', flush=True)
+
+                except asyncio.TimeoutError:
+                    continue
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            print(f"\nОшибка в дисплее событий: {e}")
+
     async def switch_space(new_space_id: str):
         nonlocal active_space_id, current_display_task
         
@@ -80,6 +123,10 @@ async def input_loop(node: Node):
             current_display_task = asyncio.create_task(
                 space_message_displayer(new_space_id), 
                 name=f'display_{new_space_id[:8]}'
+            )
+            current_event_task = asyncio.create_task(
+                space_event_displayer(new_space_id), 
+                name=f'display_evt_{new_space_id[:8]}'
             )
             print(f"Переключено на пространство: {node.spaces[new_space_id].name}")
         else:
@@ -116,6 +163,46 @@ async def input_loop(node: Node):
                         print(f"verify_key: {node.User.verify_key.encode().hex()[:32]}...")
                     else:
                         print("Ошибка создания пользователя")
+
+                case '/sendfile':
+                    if node.User is None: 
+                        print("Нужен пользователь"); continue
+                    
+                    if not active_space_id or active_space_id not in node.spaces:
+                        print("Ошибка: Не выбрано активное пространство.")
+                        continue
+                    
+                    # Ожидаемый формат: /sendfile <метка> <путь_к_файлу>
+                    # Или: /sendfile <путь_к_файлу> (тогда метка будет 'default')
+                    
+                    args = parts[1].split() if len(parts) > 1 else []
+                    
+                    if len(args) < 1:
+                        print("Использование: /sendfile [метка] <путь_к_файлу>")
+                        print("Пример: /sendfile work ./doc.pdf")
+                        print("Пример: /sendfile ./photo.jpg (метка будет 'default')")
+                        continue
+
+                    # Логика парсинга: если первый аргумент не похож на путь (не содержит / или .), считаем его меткой
+                    # Но для простоты будем считать: если 2 аргумента, то первый - метка, второй - путь.
+                    # Если 1 аргумент, то метка = 'default', путь = аргумент.
+                    
+                    tag = "default"
+                    file_path = ""
+                    
+                    if len(args) == 1:
+                        file_path = args[0]
+                    elif len(args) >= 2:
+                        tag = args[0]
+                        file_path = args[1]
+                    else:
+                        print("Ошибка аргументов")
+                        continue
+
+                    space_obj = node.spaces[active_space_id]
+                    
+                    print(f"Отправка файла '{file_path}' с меткой '{tag}'...")
+                    asyncio.create_task(space_obj.send_file(file_path, tag=tag))
 
                 case '/logout':
                     if node.logout_user():

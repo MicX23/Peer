@@ -5,7 +5,166 @@
   background-color: var(--discord-bg);
   min-width: 0; /* Prevents flex items from overflowing */
 }
+/* ... существующие стили ... */
 
+.pending-file-panel {
+  background-color: var(--discord-channel);
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--discord-border);
+}
+
+.pending-file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--discord-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pending-file-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-tag-input {
+  flex: 1;
+  background-color: var(--discord-bg);
+  border: 1px solid var(--discord-border);
+  color: var(--discord-text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.file-tag-input:focus {
+  border-color: var(--discord-accent);
+}
+
+.pending-file-remove {
+  cursor: pointer;
+  color: var(--discord-muted);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.pending-file-remove:hover {
+  background-color: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+}
+
+.file-tag {
+  font-size: 11px;
+  color: var(--discord-accent);
+  margin-top: 2px;
+  font-weight: bold;
+}
+
+.file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 4px;
+  max-width: 300px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.file-attachment:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Контекстное меню */
+.file-context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: #2d2d3a; /* Темный фон */
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  padding: 6px 0;
+  min-width: 180px;
+  animation: fadeIn 0.1s ease-out;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.context-menu-item:hover {
+  background: #3d3d4a; /* Подсветка при наведении */
+  color: #fff;
+}
+
+/* Дополнительный стиль для пузырька с файлом, чтобы было понятно, что можно кликнуть */
+.file-bubble {
+  cursor: context-menu; /* Меняет курсор при наведении */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.file-bubble {
+  cursor: context-menu; /* Показывает, что можно вызвать меню */
+}
+
+.file-context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: #2d2d3a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  padding: 6px 0;
+  min-width: 180px;
+  animation: fadeIn 0.1s ease-out;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.context-menu-item:hover {
+  background: #3d3d4a;
+  color: #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+/* ... остальные стили ... */
 .chat-header {
   height: 48px;
   padding: 0 16px;
@@ -266,3 +425,159 @@
   word-break: break-all;
   font-size: 13px;
 }
+
+.system-message {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.system-text {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: var(--discord-muted);
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.chat-input-container {
+  padding: 0 16px 24px 16px;
+  background-color: var(--discord-bg);
+}
+
+.chat-input-wrapper {
+  background-color: var(--discord-channel);
+  border-radius: 8px;
+  padding: 8px 16px; /* Уменьшили вертикальный паддинг */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.2s;
+  border: 2px solid transparent;
+}
+
+/* Подсветка при Drag & Drop */
+.chat-input-wrapper.drag-over {
+  border-color: var(--discord-accent);
+  background-color: rgba(88, 101, 242, 0.1);
+}
+
+.attach-btn {
+  background: transparent;
+  border: none;
+  color: var(--discord-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attach-btn:hover {
+  color: var(--discord-text);
+  background-color: var(--discord-hover);
+}
+
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--discord-text);
+  font-size: 15px;
+  outline: none;
+  padding: 8px 0;
+}
+
+.send-btn {
+  background: transparent;
+  border: none;
+  color: var(--discord-accent);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn:hover {
+  color: white;
+  background-color: var(--discord-accent);
+}
+
+.send-btn:disabled {
+  color: var(--discord-muted);
+  cursor: default;
+  background: transparent;
+}
+
+/* Стили для сообщения с файлом */
+.file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 4px;
+  max-width: 300px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.file-attachment:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.file-icon {
+  color: var(--discord-muted);
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--discord-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-size: 11px;
+  color: var(--discord-muted);
+}
+
+/* Индикатор загружаемого файла в инпуте */
+.pending-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--discord-bg);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--discord-text);
+  border: 1px solid var(--discord-border);
+}
+
+.pending-file-remove {
+  cursor: pointer;
+  color: var(--discord-muted);
+}
+.pending-file-remove:hover {
+  color: #f87171;
+}
+
