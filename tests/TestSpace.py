@@ -6,7 +6,7 @@ class Space():
     secret              = None      # BLAKE2b(seed, key="chat-key", size=32) — ключ шифрования сообщений
     signing_key         = None      # Ed25519 приватный ключ — для подписи метаданных (Не передаётся)
     verify_key          = None      # Ed25519 публичный ключ
-    metadata = {                    # В metadata можно написать всё что угодно, и потом всё сериализовать
+    metadata = {                    # В metadata можно написать всё что угодно, и потом всё сериализовать (КАК СТРОКУ!)
         'Name':'ServerName'         # в строку json например, так как json не нужно собирать как protobuf 
     }                               #    
     signature           = None      # Подписанная metadata

@@ -36,8 +36,7 @@ class Node():
         ('127.0.0.1',9090)  # Test
         ]    
     Spaces       = {}       # Пространства    
-    public_addr  = None     # 
-    # private_addr = None   # Зачем это мне, все приватные будут в Space
+    public_addr  = None     # Теперь этим занимается Networker
     Status       = False    #
 
     def __init__(self):
