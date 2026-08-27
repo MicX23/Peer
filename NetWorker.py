@@ -19,7 +19,7 @@ class NetWorker:
         # отправляем контакту
         pass   
 
-    async def send_space_message(self,message,chat_id):
+    async def send_space_message(self,message,peers):
         # зашифровываем
         # отправляем всем пирам
         pass   

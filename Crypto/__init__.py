@@ -6,6 +6,10 @@ import asyncio
 class Crypto:
     def __init__(self):
         self.is_loaded = asyncio.Event() # изменить на profile_is_loaded
+        self.private_key    = None
+        self.public_key     = None
+        self.signing_key    = None
+        self.verify_key     = None
 
     def create_profile(self):
         private_key, public_key = AEncryption.generate_key()
@@ -31,7 +35,7 @@ class Crypto:
 
     def verify(self, data, verify_key_hex, signed_hex):
         if type(data) == str: data = data.encode('utf-8')
-        elif type(data) != str: 
+        elif type(data) != bytes: 
             print('data не byte и не str')
             return None
         verify_key = Signatures.hex_to_verefy_key(verify_key_hex) # Это трудоёмкая задача, если сообщений будет много, то нужно куда то сохранять типа {'id':VerefyKey}
@@ -39,8 +43,9 @@ class Crypto:
 
     def encrypt(self, data, key_hex, in_sealbox:bool=False):
         if type(data) == str: data = data.encode('utf-8')
-        elif type(data) != str: 
+        elif type(data) != bytes: 
             print('data не byte и не str')
+            return None
         if in_sealbox:
             public_key = AEncryption.hex_to_public_key(key_hex)
             return AEncryption.sealbox_encrypt(public_key,data)
